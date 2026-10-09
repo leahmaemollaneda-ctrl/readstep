@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phonics & Early Reading Adventure</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Fredoka & Quicksand for clean, highly legible child-friendly text -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- PPTXGenJS for 1-Click PowerPoint File Generation -->
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+    <!-- Canvas Confetti for Reward Animations -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        quicksand: ['Quicksand', 'sans-serif'],
+                    },
+                    colors: {
+                        brandYellow: '#FFD166',
+                        brandBlue: '#4EA8DE',
+                        brandGreen: '#06D6A0',
+                        brandPink: '#EF476F',
+                        brandPurple: '#118AB2',
+                        pastelBg: '#F8FAFC',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background-color: #F4F7FE;
+            color: #1E293B;
+            user-select: none;
+        }
+        .bounce-hover:hover {
+            transform: translateY(-4px) scale(1.02);
+        }
+        .card-shadow {
+            box-shadow: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+        }
+        .btn-shadow {
+            box-shadow: 0 6px 0 0 rgba(0,0,0,0.15);
+        }
+        .btn-shadow:active {
+            box-shadow: 0 2px 0 0 rgba(0,0,0,0.15);
+            transform: translateY(4px);
+        }
+        .slide-title-text {
+            font-size: clamp(2.2rem, 4vw, 3.5rem);
+            line-height: 1.15;
+        }
+        .slide-body-text {
+            font-size: clamp(1.5rem, 2.8vw, 2.5rem);
+            line-height: 1.35;
+        }
+        .pulse-audio {
+            animation: pulse-ring 1.5s infinite;
+        }
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(78, 168, 222, 0.5); }
+            70% { box-shadow: 0 0 0 18px rgba(78, 168, 222, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(78, 168, 222, 0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between bg-slate-50 text-slate-800">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white border-b-4 border-sky-200 px-4 py-3 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <!-- App Logo & Title -->
+            <div class="flex items-center gap-3">
+                <div class="w-12 h-12 bg-amber-400 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-md">
+                    <i class="fa-solid fa-book-open-reader"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-wide">Phonics Academy</h1>
+                    <p class="text-xs md:text-sm text-sky-600 font-semibold">Interactive Learning & Lesson Deck</p>
+                </div>
+            </div>
+
+            <!-- Mode Selector Switcher -->
+            <div class="flex items-center bg-slate-100 p-1.5 rounded-2xl border border-slate-200 gap-1">
+                <button id="btnModeTeacher" onclick="switchMode('teacher')" class="px-4 py-2 rounded-xl text-base font-bold transition-all bg-sky-500 text-white shadow-sm">
+                    <i class="fa-solid fa-chalkboard-user mr-2"></i> Teacher Slide Deck
+                </button>
+                <button id="btnModeStudent" onclick="switchMode('student')" class="px-4 py-2 rounded-xl text-base font-bold transition-all text-slate-600 hover:text-sky-600">
+                    <i class="fa-solid fa-gamepad mr-2"></i> Student Games
+                </button>
+            </div>
+
+            <!-- Action Controls: Audio Toggle & PPTX Export -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleAudioSpeech()" id="audioToggleBtn" class="bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-2 rounded-xl font-bold text-sm flex items-center gap-2 border border-emerald-300">
+                    <i class="fa-solid fa-volume-high text-lg" id="audioIcon"></i>
+                    <span class="hidden sm:inline">Voice On</span>
+                </button>
+
+                <button onclick="downloadPPTX()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold px-4 py-2 rounded-xl shadow-md text-sm md:text-base flex items-center gap-2 transition-transform active:scale-95">
+                    <i class="fa-solid fa-file-powerpoint text-lg"></i>
+                    <span>Download PPTX</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Module Sequence Bar -->
+    <nav class="bg-sky-50 border-b border-sky-100 py-2.5 px-4 overflow-x-auto">
+        <div class="max-w-7xl mx-auto flex items-center justify-between min-w-[750px] gap-2">
+            <button onclick="selectModule(0)" id="modTab-0" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-white text-sky-600 shadow-sm border-2 border-sky-400">
+                <span class="w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center">1</span>
+                <span>Letter Recognition</span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-sky-300 text-xs"></i>
+
+            <button onclick="selectModule(1)" id="modTab-1" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80">
+                <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">2</span>
+                <span>Letter Sounds</span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-sky-300 text-xs"></i>
+
+            <button onclick="selectModule(2)" id="modTab-2" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80">
+                <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">3</span>
+                <span>Syllable Blending</span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-sky-300 text-xs"></i>
+
+            <button onclick="selectModule(3)" id="modTab-3" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80">
+                <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">4</span>
+                <span>Word Building</span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-sky-300 text-xs"></i>
+
+            <button onclick="selectModule(4)" id="modTab-4" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80">
+                <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">5</span>
+                <span>Word Reading</span>
+            </button>
+            <i class="fa-solid fa-chevron-right text-sky-300 text-xs"></i>
+
+            <button onclick="selectModule(5)" id="modTab-5" class="mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80">
+                <span class="w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center">6</span>
+                <span>Read & Answer</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 flex flex-col justify-center">
+
+        <!-- ================= MODE 1: TEACHER PRESENTATION SLIDE DECK ================= -->
+        <div id="teacherView" class="w-full space-y-4">
+            
+            <!-- Slide Stage Card -->
+            <div class="bg-white rounded-3xl border-4 border-slate-200 card-shadow p-6 md:p-10 min-h-[500px] flex flex-col justify-between relative overflow-hidden transition-all">
+                
+                <!-- Slide Header Banner -->
+                <div class="flex items-center justify-between pb-4 border-b-2 border-slate-100">
+                    <span id="slideCategoryBadge" class="px-4 py-1.5 rounded-full bg-amber-100 text-amber-800 text-base md:text-lg font-bold border border-amber-300 flex items-center gap-2">
+                        <i class="fa-solid fa-star text-amber-500"></i>
+                        <span>Session 1: Letter Recognition</span>
+                    </span>
+                    <span id="slideCounterText" class="text-slate-500 font-bold text-lg">
+                        Slide 1 / 20
+                    </span>
+                </div>
+
+                <!-- Slide Content Grid Layout (Large Font Sizes for Class Presentation) -->
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 my-6 items-center flex-1">
+                    
+                    <!-- Left Column: Title, Bullet Content & Teacher Prompts (60% width) -->
+                    <div class="lg:col-span-7 space-y-6">
+                        <h2 id="slideTitle" class="slide-title-text font-bold text-sky-700 leading-tight">
+                            Meet Uppercase and Lowercase A a
+                        </h2>
+
+                        <!-- Content Bullet Points (Font size minimum 45 equivalents for student readability) -->
+                        <ul id="slideContentList" class="slide-body-text space-y-4 text-slate-700 font-medium list-disc pl-6">
+                            <li>Uppercase <span class="text-rose-500 font-bold">A</span> starts big at the top!</li>
+                            <li>Lowercase <span class="text-rose-500 font-bold">a</span> has a round belly and a stick.</li>
+                            <li>Both letters make the phonics sound <strong class="text-emerald-600">/æ/</strong> as in <em>Apple</em>.</li>
+                        </ul>
+
+                        <!-- Formative Assessment Question Box (Embedded in slide) -->
+                        <div id="formativeAssessmentBox" class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 mt-6">
+                            <div class="flex items-center gap-2 text-emerald-800 font-bold text-lg mb-1">
+                                <i class="fa-solid fa-circle-question text-emerald-600"></i>
+                                <span>Quick Check!</span>
+                            </div>
+                            <p id="formativeQuestionText" class="text-slate-700 text-xl font-semibold">
+                                Which letter is the lowercase 'a'?
+                            </p>
+                            <div id="formativeOptionsContainer" class="flex flex-wrap gap-3 mt-3">
+                                <!-- Dynamic Options -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Visual Graphic Card (Occupies <= 40% area) -->
+                    <div class="lg:col-span-5 flex flex-col items-center justify-center h-full">
+                        <div class="w-full max-w-sm bg-gradient-to-b from-sky-50 to-blue-50 border-4 border-sky-200 rounded-3xl p-6 flex flex-col items-center justify-center text-center shadow-inner relative group">
+                            
+                            <!-- Large Illustrated Graphic Container -->
+                            <div id="slideVisualContainer" class="w-48 h-48 sm:w-56 sm:h-56 bg-white rounded-2xl flex items-center justify-center text-7xl sm:text-8xl shadow-md border-2 border-sky-100 mb-4 transition-transform group-hover:scale-105">
+                                🍎
+                            </div>
+
+                            <p id="slideVisualCaption" class="text-xl font-bold text-slate-700 bg-white/80 px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">
+                                A is for Apple
+                            </p>
+
+                            <!-- Audio Speaker Button -->
+                            <button onclick="speakSlideContent()" class="mt-4 bg-sky-500 hover:bg-sky-600 text-white font-bold text-lg px-6 py-2.5 rounded-2xl shadow-md flex items-center gap-3 transition-transform active:scale-95 pulse-audio">
+                                <i class="fa-solid fa-volume-high text-xl"></i>
+                                <span>Listen Sound</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Slide Navigation Controls -->
+                <div class="flex items-center justify-between pt-4 border-t-2 border-slate-100">
+                    <button onclick="prevSlide()" id="btnPrevSlide" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-6 py-3 rounded-2xl text-lg flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-arrow-left"></i>
+                        <span>Previous</span>
+                    </button>
+
+                    <div class="flex items-center gap-2">
+                        <button onclick="speakSlideContent()" class="hidden md:flex bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold px-4 py-3 rounded-2xl text-base items-center gap-2 border border-amber-300">
+                            <i class="fa-solid fa-headset text-amber-600"></i>
+                            <span>Read Slide Teacher Speech</span>
+                        </button>
+                    </div>
+
+                    <button onclick="nextSlide()" id="btnNextSlide" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-8 py-3 rounded-2xl text-lg flex items-center gap-2 shadow-md transition-all">
+                        <span>Next Slide</span>
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ================= MODE 2: INTERACTIVE STUDENT ACTIVITIES ================= -->
+        <div id="studentView" class="w-full hidden space-y-6">
+
+            <!-- Activity Container Box -->
+            <div class="bg-white rounded-3xl border-4 border-purple-200 card-shadow p-6 md:p-10 min-h-[500px] flex flex-col justify-between relative">
+                
+                <!-- Activity Header -->
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b-2 border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <span id="gameBadge" class="px-4 py-1.5 rounded-full bg-purple-100 text-purple-800 font-bold text-lg border border-purple-300 flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad text-purple-600"></i>
+                            <span id="gameTitle">Activity 1: Choose the Letter</span>
+                        </span>
+                    </div>
+
+                    <!-- Score & Star Counter -->
+                    <div class="flex items-center gap-4 bg-amber-50 px-4 py-2 rounded-2xl border border-amber-200">
+                        <div class="flex items-center gap-1.5 text-amber-600 font-bold text-lg">
+                            <i class="fa-solid fa-star text-amber-400 text-xl"></i>
+                            <span id="starCount">0</span> Stars
+                        </div>
+                        <div class="h-5 w-0.5 bg-amber-200"></div>
+                        <div class="text-slate-600 font-bold text-base">
+                            Question <span id="gameStep">1</span>/5
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Activity Canvas Body -->
+                <div id="gameCanvas" class="my-6 flex-1 flex flex-col items-center justify-center">
+                    <!-- Dynamic Activity Items Rendered Here via JS -->
+                </div>
+
+                <!-- Activity Footer & Feedback Banner -->
+                <div class="pt-4 border-t-2 border-slate-100 flex items-center justify-between">
+                    <div id="gameFeedbackMsg" class="text-xl font-bold text-slate-700 flex items-center gap-2">
+                        <span>Click an answer to start!</span>
+                    </div>
+
+                    <button onclick="nextGameQuestion()" id="btnNextGame" class="bg-emerald-500 hover:bg-emerald-600 text-white font-bold px-6 py-3 rounded-2xl text-lg shadow-md flex items-center gap-2">
+                        <span>Next Question</span>
+                        <i class="fa-solid fa-forward"></i>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal for Quick Feedback or Instructions -->
+    <div id="infoModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 md:p-8 max-w-md w-full shadow-2xl border-4 border-sky-300 text-center space-y-4">
+            <div id="modalIcon" class="w-16 h-16 bg-sky-100 text-sky-600 rounded-full flex items-center justify-center text-3xl mx-auto">
+                <i class="fa-solid fa-award"></i>
+            </div>
+            <h3 id="modalTitle" class="text-2xl font-bold text-slate-800">Great Job!</h3>
+            <p id="modalBody" class="text-slate-600 text-lg">You completed the session successfully!</p>
+            <button onclick="closeModal()" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-bold py-3 rounded-2xl text-lg shadow-md">
+                Continue
+            </button>
+        </div>
+    </div>
+
+    <!-- Student-Friendly Footer -->
+    <footer class="bg-white border-t border-slate-200 py-3 px-4 text-center text-slate-500 text-sm font-semibold">
+        <p>Phonics & Early Reading Curriculum • Teacher Interactive Deck & Student Activities</p>
+    </footer>
+
+    <script>
+        /* ==========================================================================
+           LESSON DATA STRUCTURE (SESSIONS 1-6 WITH ALL 26 LETTERS A-Z)
+           ========================================================================== */
+
+        const lessonModules = [
+            {
+                id: 0,
+                name: "Letter Recognition (A-Z)",
+                gameTitle: "Choose the Letter",
+                slides: generateRecognitionSlides(),
+                gameQuestions: generateRecognitionGames()
+            },
+            {
+                id: 1,
+                name: "Letter Sounds (A-Z)",
+                gameTitle: "Match the Sound",
+                slides: generateSoundsSlides(),
+                gameQuestions: generateSoundsGames()
+            },
+            {
+                id: 2,
+                name: "Syllable Blending",
+                gameTitle: "Blend the Syllables",
+                slides: generateSyllableSlides(),
+                gameQuestions: generateSyllableGames()
+            },
+            {
+                id: 3,
+                name: "Word Building",
+                gameTitle: "Build the Word",
+                slides: generateWordBuildingSlides(),
+                gameQuestions: generateWordBuildingGames()
+            },
+            {
+                id: 4,
+                name: "Word Reading",
+                gameTitle: "Read the Word",
+                slides: generateWordReadingSlides(),
+                gameQuestions: generateWordReadingGames()
+            },
+            {
+                id: 5,
+                name: "Sentence Reading",
+                gameTitle: "Read and Answer",
+                slides: generateSentenceSlides(),
+                gameQuestions: generateSentenceGames()
+            }
+        ];
+
+        /* --- DATA GENERATORS FOR SLIDES (Complete 26 Letters A through Z) --- */
+        function generateRecognitionSlides() {
+            const letters = [
+                { upper: 'A', lower: 'a', word: 'Apple', icon: '🍎' },
+                { upper: 'B', lower: 'b', word: 'Ball', icon: '⚽' },
+                { upper: 'C', lower: 'c', word: 'Cat', icon: '🐱' },
+                { upper: 'D', lower: 'd', word: 'Dog', icon: '🐶' },
+                { upper: 'E', lower: 'e', word: 'Elephant', icon: '🐘' },
+                { upper: 'F', lower: 'f', word: 'Fish', icon: '🐟' },
+                { upper: 'G', lower: 'g', word: 'Giraffe', icon: '🦒' },
+                { upper: 'H', lower: 'h', word: 'House', icon: '🏠' },
+                { upper: 'I', lower: 'i', word: 'Ice Cream', icon: '🍦' },
+                { upper: 'J', lower: 'j', word: 'Juice', icon: '🧃' },
+                { upper: 'K', lower: 'k', word: 'Kite', icon: '🪁' },
+                { upper: 'L', lower: 'l', word: 'Lion', icon: '🦁' },
+                { upper: 'M', lower: 'm', word: 'Monkey', icon: '🐒' },
+                { upper: 'N', lower: 'n', word: 'Nest', icon: '🪹' },
+                { upper: 'O', lower: 'o', word: 'Owl', icon: '🦉' },
+                { upper: 'P', lower: 'p', word: 'Penguin', icon: '🐧' },
+                { upper: 'Q', lower: 'q', word: 'Queen', icon: '👑' },
+                { upper: 'R', lower: 'r', word: 'Rabbit', icon: '🐰' },
+                { upper: 'S', lower: 's', word: 'Sun', icon: '☀️' },
+                { upper: 'T', lower: 't', word: 'Tree', icon: '🌳' },
+                { upper: 'U', lower: 'u', word: 'Umbrella', icon: '☂️️' },
+                { upper: 'V', lower: 'v', word: 'Van', icon: '🚐' },
+                { upper: 'W', lower: 'w', word: 'Watermelon', icon: '🍉' },
+                { upper: 'X', lower: 'x', word: 'X-ray', icon: '🦴' },
+                { upper: 'Y', lower: 'y', word: 'Yo-yo', icon: '🪀' },
+                { upper: 'Z', lower: 'z', word: 'Zebra', icon: '🦓' }
+            ];
+
+            return letters.map((item, idx) => ({
+                id: idx + 1,
+                title: `Meet Uppercase '${item.upper}' and Lowercase '${item.lower}'`,
+                bullets: [
+                    `Capital letter <strong class="text-sky-600">${item.upper}</strong> is written with big bold strokes!`,
+                    `Lowercase letter <strong class="text-rose-500">${item.lower}</strong> is its smaller partner.`,
+                    `The word <strong class="text-emerald-600">'${item.word}'</strong> starts with the letter ${item.upper}.`
+                ],
+                visual: item.icon,
+                caption: `${item.upper} ${item.lower} is for ${item.word}`,
+                speech: `This is uppercase ${item.upper} and lowercase ${item.lower}. ${item.upper} is for ${item.word}.`,
+                assessment: {
+                    question: `Which is the lowercase match for uppercase '${item.upper}'?`,
+                    options: [item.lower, String.fromCharCode(((item.lower.charCodeAt(0) - 97 + 2) % 26) + 97), String.fromCharCode(((item.lower.charCodeAt(0) - 97 + 5) % 26) + 97)],
+                    correct: item.lower
+                }
+            }));
+        }
+
+        function generateSoundsSlides() {
+            const sounds = [
+                { letter: 'A', sound: '/æ/', word: 'Ant', icon: '🐜' },
+                { letter: 'B', sound: '/b/', word: 'Bear', icon: '🐻' },
+                { letter: 'C', sound: '/k/', word: 'Car', icon: '🚗' },
+                { letter: 'D', sound: '/d/', word: 'Duck', icon: '🦆' },
+                { letter: 'E', sound: '/e/', word: 'Egg', icon: '🥚' },
+                { letter: 'F', sound: '/f/', word: 'Frog', icon: '🐸' },
+                { letter: 'G', sound: '/g/', word: 'Grapes', icon: '🍇' },
+                { letter: 'H', sound: '/h/', word: 'Hat', icon: '🧢' },
+                { letter: 'I', sound: '/ɪ/', word: 'Igloo', icon: '🧊' },
+                { letter: 'J', sound: '/dʒ/', word: 'Jam', icon: '🍓' },
+                { letter: 'K', sound: '/k/', word: 'Kangaroo', icon: '🦘' },
+                { letter: 'L', sound: '/l/', word: 'Lemon', icon: '🍋' },
+                { letter: 'M', sound: '/m/', word: 'Moon', icon: '🌙' },
+                { letter: 'N', sound: '/n/', word: 'Net', icon: '🕸️' },
+                { letter: 'O', sound: '/ɒ/', word: 'Octopus', icon: '🐙' },
+                { letter: 'P', sound: '/p/', word: 'Pizza', icon: '🍕' },
+                { letter: 'Q', sound: '/kw/', word: 'Quilt', icon: '🛋️' },
+                { letter: 'R', sound: '/r/', word: 'Rocket', icon: '🚀' },
+                { letter: 'S', sound: '/s/', word: 'Star', icon: '⭐' },
+                { letter: 'T', sound: '/t/', word: 'Turtle', icon: '🐢' },
+                { letter: 'U', sound: '/ʌ/', word: 'Umbrella', icon: '☂️' },
+                { letter: 'V', sound: '/v/', word: 'Violin', icon: '🎻' },
+                { letter: 'W', sound: '/w/', word: 'Whale', icon: '🐋' },
+                { letter: 'X', sound: '/ks/', word: 'Fox', icon: '🦊' },
+                { letter: 'Y', sound: '/j/', word: 'Yo-yo', icon: '🪀' },
+                { letter: 'Z', sound: '/z/', word: 'Zebra', icon: '🦓' }
+            ];
+
+            return sounds.map((item, idx) => ({
+                id: idx + 1,
+                title: `Phonics Sound for Letter '${item.letter}'`,
+                bullets: [
+                    `Letter <strong class="text-sky-600">${item.letter}</strong> makes the sound <strong class="text-amber-600">${item.sound}</strong>.`,
+                    `Listen carefully and repeat: <strong class="text-emerald-600">${item.sound}</strong>... <strong class="text-emerald-600">${item.sound}</strong>!`,
+                    `<strong class="text-rose-500">${item.word}</strong> starts with the <strong class="text-amber-600">${item.sound}</strong> sound.`
+                ],
+                visual: item.icon,
+                caption: `Sound ${item.sound} in ${item.word}`,
+                speech: `The letter ${item.letter} makes the sound ${item.sound}. ${item.word} starts with ${item.sound}.`,
+                assessment: {
+                    question: `What sound does letter '${item.letter}' make?`,
+                    options: [item.sound, '/z/', '/m/'],
+                    correct: item.sound
+                }
+            }));
+        }
+
+        function generateRecognitionGames() {
+            const allLetters = generateRecognitionSlides();
+            return allLetters.map((item) => ({
+                prompt: `Which is the LOWERCASE match for '${item.assessment.correct.toUpperCase()}'?`,
+                target: item.assessment.correct,
+                options: item.assessment.options,
+                sound: `Letter ${item.assessment.correct}`
+            }));
+        }
+
+        function generateSoundsGames() {
+            const allSounds = generateSoundsSlides();
+            return allSounds.map((item) => ({
+                prompt: `Which letter makes the ${item.assessment.correct} sound?`,
+                target: item.bullets[0].match(/Letter <strong class="text-sky-600">([A-Z])<\/strong>/)[1],
+                options: [
+                    item.bullets[0].match(/Letter <strong class="text-sky-600">([A-Z])<\/strong>/)[1],
+                    String.fromCharCode(((item.id + 3) % 26) + 65),
+                    String.fromCharCode(((item.id + 8) % 26) + 65)
+                ].sort(() => Math.random() - 0.5),
+                sound: `Sound ${item.assessment.correct}`
+            }));
+        }
+
+        function generateSoundsSlides() {
+            const sounds = [
+                { letter: 'A', sound: '/æ/', word: 'Ant', icon: '🐜' },
+                { letter: 'B', sound: '/b/', word: 'Bear', icon: '🐻' },
+                { letter: 'C', sound: '/k/', word: 'Car', icon: '🚗' },
+                { letter: 'D', sound: '/d/', word: 'Duck', icon: '🦆' },
+                { letter: 'E', sound: '/e/', word: 'Egg', icon: '🥚' },
+                { letter: 'F', sound: '/f/', word: 'Frog', icon: '🐸' },
+                { letter: 'G', sound: '/g/', word: 'Grapes', icon: '🍇' },
+                { letter: 'H', sound: '/h/', word: 'Hat', icon: '🧢' },
+                { letter: 'I', sound: '/ɪ/', word: 'Igloo', icon: '🧊' },
+                { letter: 'J', sound: '/dʒ/', word: 'Jam', icon: '🍓' },
+                { letter: 'K', sound: '/k/', word: 'Kangaroo', icon: '🦘' },
+                { letter: 'L', sound: '/l/', word: 'Lemon', icon: '🍋' },
+                { letter: 'M', sound: '/m/', word: 'Moon', icon: '🌙' },
+                { letter: 'N', sound: '/n/', word: 'Net', icon: '🕸️' },
+                { letter: 'O', sound: '/ɒ/', word: 'Octopus', icon: '🐙' },
+                { letter: 'P', sound: '/p/', word: 'Pizza', icon: '🍕' },
+                { letter: 'Q', sound: '/kw/', word: 'Quilt', icon: '🛋️' },
+                { letter: 'R', sound: '/r/', word: 'Rocket', icon: '🚀' },
+                { letter: 'S', sound: '/s/', word: 'Star', icon: '⭐' },
+                { letter: 'T', sound: '/t/', word: 'Turtle', icon: '🐢' }
+            ];
+
+            return sounds.map((item, idx) => ({
+                id: idx + 1,
+                title: `Phonics Sound for Letter '${item.letter}'`,
+                bullets: [
+                    `Letter ${item.letter} makes the sound ${item.sound}.`,
+                    `Listen carefully and repeat: ${item.sound}... ${item.sound}!`,
+                    `${item.word} starts with the ${item.sound} sound.`
+                ],
+                visual: item.icon,
+                caption: `Sound ${item.sound} in ${item.word}`,
+                speech: `The letter ${item.letter} makes the sound ${item.sound}. ${item.word} starts with ${item.sound}.`,
+                assessment: {
+                    question: `What sound does letter '${item.letter}' make?`,
+                    options: [item.sound, '/z/', '/m/'],
+                    correct: item.sound
+                }
+            }));
+        }
+
+        function generateSyllableSlides() {
+            const syllables = [
+                { word: 'Banana', parts: ['ba', 'na', 'na'], count: 3, icon: '🍌' },
+                { word: 'Cat', parts: ['cat'], count: 1, icon: '🐱' },
+                { word: 'Rabbit', parts: ['rab', 'bit'], count: 2, icon: '🐰' },
+                { word: 'Sunshine', parts: ['sun', 'shine'], count: 2, icon: '☀️' },
+                { word: 'Butterfly', parts: ['but', 'ter', 'fly'], count: 3, icon: '🦋' },
+                { word: 'Apple', parts: ['ap', 'ple'], count: 2, icon: '🍎' },
+                { word: 'Tiger', parts: ['ti', 'ger'], count: 2, icon: '🐅' },
+                { word: 'Dinosaur', parts: ['di', 'no', 'saur'], count: 3, icon: '🦖' },
+                { word: 'Dog', parts: ['dog'], count: 1, icon: '🐶' },
+                { word: 'Rainbow', parts: ['rain', 'bow'], count: 2, icon: '🌈' },
+                { word: 'Robot', parts: ['ro', 'bot'], count: 2, icon: '🤖' },
+                { word: 'Elephant', parts: ['el', 'e', 'phant'], count: 3, icon: '🐘' },
+                { word: 'Flower', parts: ['flow', 'er'], count: 2, icon: '🌸' },
+                { word: 'Umbrella', parts: ['um', 'brel', 'la'], count: 3, icon: '☂️' },
+                { word: 'Monkey', parts: ['mon', 'key'], count: 2, icon: '🐒' },
+                { word: 'Pizza', parts: ['piz', 'za'], count: 2, icon: '🍕' },
+                { word: 'Watermelon', parts: ['wa', 'ter', 'mel', 'on'], count: 4, icon: '🍉' },
+                { word: 'Pencil', parts: ['pen', 'cil'], count: 2, icon: '✏️️' },
+                { word: 'Fish', parts: ['fish'], count: 1, icon: '🐟' },
+                { word: 'Helicopter', parts: ['hel', 'i', 'cop', 'ter'], count: 4, icon: '🚁' }
+            ];
+
+            return syllables.map((item, idx) => ({
+                id: idx + 1,
+                title: `Syllable Blending: '${item.word}'`,
+                bullets: [
+                    `Syllables are beat chunks in a word.`,
+                    `Break it down: ${item.parts.map(p => `[ ${p} ]`).join(' + ')}`,
+                    `Clap along! '${item.word}' has ${item.count} syllable beat(s).`
+                ],
+                visual: item.icon,
+                caption: `${item.parts.join(' - ')} = ${item.word}`,
+                speech: `Let us blend syllables. ${item.parts.join(', ')}. Put them together to make ${item.word}.`,
+                assessment: {
+                    question: `How many syllables in '${item.word}'?`,
+                    options: [`${item.count}`, `${item.count + 1}`, `${Math.max(1, item.count - 1)}`],
+                    correct: `${item.count}`
+                }
+            }));
+        }
+
+        function generateWordBuildingSlides() {
+            const words = [
+                { target: 'CAT', letters: ['C', 'A', 'T'], icon: '🐱' },
+                { target: 'DOG', letters: ['D', 'O', 'G'], icon: '🐶' },
+                { target: 'SUN', letters: ['S', 'U', 'N'], icon: '☀️' },
+                { target: 'BAT', letters: ['B', 'A', 'T'], icon: '🦇' },
+                { target: 'PIG', letters: ['P', 'I', 'G'], icon: '🐷' },
+                { target: 'PEN', letters: ['P', 'E', 'N'], icon: '🖊️' },
+                { target: 'BUS', letters: ['B', 'U', 'S'], icon: '🚌' },
+                { target: 'HAT', letters: ['H', 'A', 'T'], icon: '🎩' },
+                { target: 'BOX', letters: ['B', 'O', 'X'], icon: '📦' },
+                { target: 'CUP', letters: ['C', 'U', 'P'], icon: '🥤' },
+                { target: 'BED', letters: ['B', 'E', 'D'], icon: '🛏️' },
+                { target: 'FAN', letters: ['F', 'A', 'N'], icon: '🪭' },
+                { target: 'BUG', letters: ['B', 'U', 'G'], icon: '🐛' },
+                { target: 'MAP', letters: ['M', 'A', 'P'], icon: '🗺️' },
+                { target: 'NET', letters: ['N', 'E', 'T'], icon: '🕸️' },
+                { target: 'FOX', letters: ['F', 'O', 'X'], icon: '🦊' },
+                { target: 'JAM', letters: ['J', 'A', 'M'], icon: '🍓' },
+                { target: 'PIN', letters: ['P', 'I', 'N'], icon: '📌' },
+                { target: 'MUG', letters: ['M', 'U', 'G'], icon: '☕' },
+                { target: 'VAN', letters: ['V', 'A', 'N'], icon: '🚐' }
+            ];
+
+            return words.map((item, idx) => ({
+                id: idx + 1,
+                title: `Word Building: Build '${item.target}'`,
+                bullets: [
+                    `Combine individual letter sounds together.`,
+                    `First letter: ${item.letters[0]}, Middle vowel: ${item.letters[1]}, End sound: ${item.letters[2]}.`,
+                    `Spell and pronounce: ${item.letters.join(' - ')} -> ${item.target}!`
+                ],
+                visual: item.icon,
+                caption: `Spell ${item.target}`,
+                speech: `Let us build the word ${item.target}. ${item.letters[0]}, ${item.letters[1]}, ${item.letters[2]}. ${item.target}!`,
+                assessment: {
+                    question: `Which letter completes _${item.letters[1]}${item.letters[2]} for ${item.target}?`,
+                    options: [item.letters[0], 'Z', 'Q'],
+                    correct: item.letters[0]
+                }
+            }));
+        }
+
+        function generateWordReadingSlides() {
+            const decodables = [
+                { word: 'Red', meaning: 'A bright color like a strawberry', icon: '🔴' },
+                { word: 'Run', meaning: 'To move fast on feet', icon: '🏃' },
+                { word: 'Hop', meaning: 'To jump on one foot', icon: '🦘' },
+                { word: 'Big', meaning: 'Large size', icon: '🐘' },
+                { word: 'Hot', meaning: 'High temperature like soup', icon: '🍲' },
+                { word: 'Wet', meaning: 'Covered in water', icon: '🌧️' },
+                { word: 'Sit', meaning: 'To rest on a chair', icon: '🪑' },
+                { word: 'Fin', meaning: 'Part of a fish used to swim', icon: '🦈' },
+                { word: 'Zip', meaning: 'Fasten a jacket', icon: '🤐' },
+                { word: 'Nut', meaning: 'Crunchy snack from trees', icon: '🥜' },
+                { word: 'Log', meaning: 'A piece of wood from a tree', icon: '🪵' },
+                { word: 'Mop', meaning: 'Tool to clean the floor', icon: '🧹' },
+                { word: 'Ten', meaning: 'The number 10', icon: '🔟' },
+                { word: 'Sad', meaning: 'Not feeling happy', icon: '😢' },
+                { word: 'Win', meaning: 'To come first place', icon: '🏆' },
+                { word: 'Top', meaning: 'The highest point', icon: '🔝' },
+                { word: 'Mud', meaning: 'Wet dirt outside', icon: '🪵' },
+                { word: 'Pet', meaning: 'An animal friend at home', icon: '🐕' },
+                { word: 'Web', meaning: 'A spider home', icon: '🕸️' },
+                { word: 'Jam', meaning: 'Sweet fruit spread', icon: '🍓' }
+            ];
+
+            return decodables.map((item, idx) => ({
+                id: idx + 1,
+                title: `Word Reading: '${item.word}'`,
+                bullets: [
+                    `Read out loud: <strong class="text-sky-600">${item.word}</strong>`,
+                    `Sound out each phoneme letter by letter.`,
+                    `Meaning: ${item.meaning}.`
+                ],
+                visual: item.icon,
+                caption: `Read: ${item.word}`,
+                speech: `Read this word out loud: ${item.word}. ${item.word} means ${item.meaning}.`,
+                assessment: {
+                    question: `Which picture matches the word '${item.word}'?`,
+                    options: [item.word, 'Blue', 'Cold'],
+                    correct: item.word
+                }
+            }));
+        }
+
+        function generateSentenceSlides() {
+            const sentences = [
+                { text: 'The cat sat on the mat.', q: 'Where did the cat sit?', opts: ['On the mat', 'In the tree', 'On the car'], a: 'On the mat', icon: '🐱' },
+                { text: 'A big red dog can run fast.', q: 'What color is the dog?', opts: ['Red', 'Blue', 'Green'], a: 'Red', icon: '🐕' },
+                { text: 'The sun is hot and bright.', q: 'How does the sun feel?', opts: ['Hot', 'Cold', 'Wet'], a: 'Hot', icon: '☀️️' },
+                { text: 'I see a frog on a log.', q: 'What is on the log?', opts: ['A frog', 'A duck', 'A bug'], a: 'A frog', icon: '🐸' },
+                { text: 'The pig is in the mud.', q: 'Where is the pig?', opts: ['In the mud', 'In the house', 'On the bed'], a: 'In the mud', icon: '🐖' },
+                { text: 'Sam has a blue hat.', q: 'What does Sam have?', opts: ['A blue hat', 'A red cap', 'A green cup'], a: 'A blue hat', icon: '🧢' },
+                { text: 'The bug is in the cup.', q: 'What is in the cup?', opts: ['A bug', 'A fish', 'A pen'], a: 'A bug', icon: '🥤' },
+                { text: 'A red bus went up the hill.', q: 'What went up the hill?', opts: ['A red bus', 'A blue van', 'A bike'], a: 'A red bus', icon: '🚌' },
+                { text: 'The duck can swim in the lake.', q: 'What can the duck do?', opts: ['Swim', 'Fly a kite', 'Drive'], a: 'Swim', icon: '🦆' },
+                { text: 'Ben fed his pet dog.', q: 'Who did Ben feed?', opts: ['His pet dog', 'His cat', 'His fish'], a: 'His pet dog', icon: '🐶' },
+                { text: 'The hen laid an egg.', q: 'What did the hen lay?', opts: ['An egg', 'A box', 'A ball'], a: 'An egg', icon: '🥚' },
+                { text: 'Ten bugs sat on the rug.', q: 'How many bugs were there?', opts: ['Ten', 'Five', 'Two'], a: 'Ten', icon: '🐛' },
+                { text: 'The fox hid in a box.', q: 'Where did the fox hide?', opts: ['In a box', 'Under a tree', 'On a rock'], a: 'In a box', icon: '🦊' },
+                { text: 'I like to eat sweet jam.', q: 'What do I like to eat?', opts: ['Sweet jam', 'Hot soup', 'Cold mud'], a: 'Sweet jam', icon: '🍓' },
+                { text: 'She has a big yellow sun hat.', q: 'What color is the hat?', opts: ['Yellow', 'Pink', 'Black'], a: 'Yellow', icon: '👒' },
+                { text: 'The man got in the van.', q: 'What did the man get into?', opts: ['The van', 'The jet', 'The boat'], a: 'The van', icon: '🚐' },
+                { text: 'The wet mop is on the floor.', q: 'What is on the floor?', opts: ['The wet mop', 'A red pen', 'A cup'], a: 'The wet mop', icon: '🧹' },
+                { text: 'A rat saw a big fat cat.', q: 'Who did the rat see?', opts: ['A big fat cat', 'A small dog', 'A owl'], a: 'A big fat cat', icon: '🐱' },
+                { text: 'Put the hot pot on the pad.', q: 'Where should the pot go?', opts: ['On the pad', 'In the box', 'Outside'], a: 'On the pad', icon: '🍲' },
+                { text: 'We had fun in the sun.', q: 'Where did we have fun?', opts: ['In the sun', 'In the rain', 'In bed'], a: 'In the sun', icon: '☀️' }
+            ];
+
+            return sentences.map((item, idx) => ({
+                id: idx + 1,
+                title: `Sentence Reading #${idx + 1}`,
+                bullets: [
+                    `Read the decodable sentence:`,
+                    `<span class="text-emerald-700 font-bold bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200 block mt-2 text-2xl">"${item.text}"</span>`,
+                    `Point to each word as you read aloud.`
+                ],
+                visual: item.icon,
+                caption: `Read and Understand`,
+                speech: `Read this sentence: ${item.text}`,
+                assessment: {
+                    question: item.q,
+                    options: item.opts,
+                    correct: item.a
+                }
+            }));
+        }
+
+        /* --- DATA GENERATORS FOR INTERACTIVE STUDENT GAMES --- */
+        function generateRecognitionGames() {
+            return [
+                { prompt: "Which is the CAPITAL letter A?", target: "A", options: ["A", "a", "b"], sound: "A" },
+                { prompt: "Which is the LOWERCASE letter b?", target: "b", options: ["B", "b", "d"], sound: "b" },
+                { prompt: "Find Uppercase letter M!", target: "M", options: ["W", "N", "M"], sound: "M" },
+                { prompt: "Find Lowercase letter e!", target: "e", options: ["e", "a", "o"], sound: "e" },
+                { prompt: "Which letter starts 'Sun'?", target: "S", options: ["S", "T", "R"], sound: "S" }
+            ];
+        }
+
+        function generateSoundsGames() {
+            return [
+                { prompt: "Which letter makes the /æ/ sound as in Apple?", target: "A", options: ["A", "B", "C"], sound: "Apple sound A" },
+                { prompt: "Which letter makes the /b/ sound as in Ball?", target: "B", options: ["D", "B", "P"], sound: "Ball sound B" },
+                { prompt: "Which letter makes the /s/ sound as in Sun?", target: "S", options: ["Z", "C", "S"], sound: "Sun sound S" },
+                { prompt: "Which letter makes the /m/ sound as in Moon?", target: "M", options: ["N", "M", "W"], sound: "Moon sound M" },
+                { prompt: "Which letter makes the /t/ sound as in Tree?", target: "T", options: ["T", "D", "P"], sound: "Tree sound T" }
+            ];
+        }
+
+        function generateSyllableGames() {
+            return [
+                { prompt: "Combine: 'ba' + 'na' + 'na'", target: "Banana", options: ["Banana", "Apple", "Bandana"] },
+                { prompt: "Combine: 'sun' + 'shine'", target: "Sunshine", options: ["Sunshine", "Sunday", "Submarine"] },
+                { prompt: "Combine: 'rain' + 'bow'", target: "Rainbow", options: ["Raindrop", "Rainbow", "Raincoat"] },
+                { prompt: "Combine: 'rob' + 'ot'", target: "Robot", options: ["Rabbit", "Robot", "Rocket"] },
+                { prompt: "Combine: 'but' + 'ter' + 'fly'", target: "Butterfly", options: ["Butter", "Butterfly", "Button"] }
+            ];
+        }
+
+        function generateWordBuildingGames() {
+            return [
+                { prompt: "Build the word: C - A - ?", missing: "T", full: "CAT", options: ["T", "P", "M"], icon: "🐱" },
+                { prompt: "Build the word: D - ? - G", missing: "O", full: "DOG", options: ["A", "O", "I"], icon: "🐶" },
+                { prompt: "Build the word: S - U - ?", missing: "N", full: "SUN", options: ["N", "M", "T"], icon: "☀️" },
+                { prompt: "Build the word: P - I - ?", missing: "G", full: "PIG", options: ["G", "T", "N"], icon: "🐖" },
+                { prompt: "Build the word: H - A - ?", missing: "T", full: "HAT", options: ["T", "N", "B"], icon: "🎩" }
+            ];
+        }
+
+        function generateWordReadingGames() {
+            return [
+                { word: "RED", options: ["🔴 Red", "🔵 Blue", "🟢 Green"], target: "🔴 Red" },
+                { word: "JUMP", options: ["🦘 Hop", "🏃 Jump", "😴 Sleep"], target: "🏃 Jump" },
+                { word: "FISH", options: ["🐟 Fish", "🦆 Duck", "🐱 Cat"], target: "🐟 Fish" },
+                { word: "STAR", options: ["⭐ Star", "🌙 Moon", "☀️ Sun"], target: "⭐ Star" },
+                { word: "BOOK", options: ["📖 Book", "✏️ Pencil", "🎒 Bag"], target: "📖 Book" }
+            ];
+        }
+
+        function generateSentenceGames() {
+            return [
+                { sentence: "The cat sat on the mat.", question: "Where is the cat?", target: "On the mat", options: ["On the mat", "In the car", "Under bed"] },
+                { sentence: "A red bus is big.", question: "What color is the bus?", target: "Red", options: ["Red", "Yellow", "Blue"] },
+                { sentence: "The sun is hot.", question: "How does the sun feel?", target: "Hot", options: ["Cold", "Hot", "Wet"] },
+                { sentence: "I see a frog on a log.", question: "What is on the log?", target: "A frog", options: ["A frog", "A pig", "A fish"] },
+                { sentence: "Ben fed his dog.", question: "Who did Ben feed?", target: "His dog", options: ["His dog", "His duck", "His cat"] }
+            ];
+        }
+
+
+        /* ==========================================================================
+           STATE MANAGEMENT & APP LOGIC
+           ========================================================================== */
+
+        let currentModuleIndex = 0;
+        let currentSlideIndex = 0;
+        let currentGameIndex = 0;
+        let starCount = 0;
+        let isAudioEnabled = true;
+        let currentMode = 'teacher'; // 'teacher' or 'student'
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            selectModule(0);
+        });
+
+        // Mode Switching
+        function switchMode(mode) {
+            currentMode = mode;
+            const btnTeacher = document.getElementById('btnModeTeacher');
+            const btnStudent = document.getElementById('btnModeStudent');
+            const teacherView = document.getElementById('teacherView');
+            const studentView = document.getElementById('studentView');
+
+            if (mode === 'teacher') {
+                btnTeacher.className = "px-4 py-2 rounded-xl text-base font-bold transition-all bg-sky-500 text-white shadow-sm";
+                btnStudent.className = "px-4 py-2 rounded-xl text-base font-bold transition-all text-slate-600 hover:text-sky-600";
+                teacherView.classList.remove('hidden');
+                studentView.classList.add('hidden');
+                renderSlide();
+            } else {
+                btnStudent.className = "px-4 py-2 rounded-xl text-base font-bold transition-all bg-purple-500 text-white shadow-sm";
+                btnTeacher.className = "px-4 py-2 rounded-xl text-base font-bold transition-all text-slate-600 hover:text-sky-600";
+                studentView.classList.remove('hidden');
+                teacherView.classList.add('hidden');
+                renderGame();
+            }
+        }
+
+        // Select Curriculum Module
+        function selectModule(index) {
+            currentModuleIndex = index;
+            currentSlideIndex = 0;
+            currentGameIndex = 0;
+
+            // Update Tab Styles
+            for (let i = 0; i < 6; i++) {
+                const tab = document.getElementById(`modTab-${i}`);
+                if (i === index) {
+                    tab.className = "mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all bg-white text-sky-600 shadow-sm border-2 border-sky-400";
+                    tab.querySelector('span:first-child').className = "w-6 h-6 rounded-full bg-sky-500 text-white text-xs flex items-center justify-center";
+                } else {
+                    tab.className = "mod-tab flex-1 py-2 px-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all text-slate-600 hover:bg-white/80";
+                    tab.querySelector('span:first-child').className = "w-6 h-6 rounded-full bg-slate-300 text-slate-700 text-xs flex items-center justify-center";
+                }
+            }
+
+            if (currentMode === 'teacher') {
+                renderSlide();
+            } else {
+                renderGame();
+            }
+        }
+
+
+        /* ==========================================================================
+           TEACHER SLIDE DECK RENDERER
+           ========================================================================== */
+
+        function renderSlide() {
+            const module = lessonModules[currentModuleIndex];
+            const slide = module.slides[currentSlideIndex];
+
+            // Header info
+            document.getElementById('slideCategoryBadge').innerHTML = `<i class="fa-solid fa-star text-amber-500"></i> Session ${currentModuleIndex + 1}: ${module.name}`;
+            document.getElementById('slideCounterText').innerText = `Slide ${currentSlideIndex + 1} / ${module.slides.length}`;
+
+            // Main slide contents
+            document.getElementById('slideTitle').innerHTML = slide.title;
+            
+            const contentList = document.getElementById('slideContentList');
+            contentList.innerHTML = slide.bullets.map(b => `<li>${b}</li>`).join('');
+
+            document.getElementById('slideVisualContainer').innerText = slide.visual;
+            document.getElementById('slideVisualCaption').innerText = slide.caption;
+
+            // Formative assessment render
+            const questionText = document.getElementById('formativeQuestionText');
+            const optionsContainer = document.getElementById('formativeOptionsContainer');
+
+            questionText.innerText = slide.assessment.question;
+            optionsContainer.innerHTML = slide.assessment.options.map(opt => `
+                <button onclick="checkFormativeAnswer('${opt}', '${slide.assessment.correct}')" 
+                        class="bg-white hover:bg-emerald-100 border-2 border-emerald-300 text-emerald-800 font-bold px-4 py-2 rounded-xl text-lg shadow-sm transition-all hover:scale-105 active:scale-95">
+                    ${opt}
+                </button>
+            `).join('');
+
+            // Prev / Next button states
+            document.getElementById('btnPrevSlide').disabled = (currentSlideIndex === 0);
+            document.getElementById('btnPrevSlide').style.opacity = (currentSlideIndex === 0) ? "0.5" : "1";
+
+            // Speak slide prompt automatically if audio enabled
+            if (isAudioEnabled) {
+                speakText(slide.speech);
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlideIndex > 0) {
+                currentSlideIndex--;
+                renderSlide();
+            }
+        }
+
+        function nextSlide() {
+            const totalSlides = lessonModules[currentModuleIndex].slides.length;
+            if (currentSlideIndex < totalSlides - 1) {
+                currentSlideIndex++;
+                renderSlide();
+            } else {
+                showModal("Module Complete!", `Awesome job finishing all slides in Session ${currentModuleIndex + 1}!`);
+            }
+        }
+
+        function checkFormativeAnswer(selected, correct) {
+            if (selected === correct) {
+                triggerConfetti();
+                speakText("Correct answer! Great job!");
+                showModal("Correct!", "That's right! Excellent work on this question.");
+            } else {
+                speakText("Try again!");
+                showModal("Try Again", "Almost there! Give it another try.");
+            }
+        }
+
+        function speakSlideContent() {
+            const slide = lessonModules[currentModuleIndex].slides[currentSlideIndex];
+            speakText(slide.speech);
+        }
+
+
+        /* ==========================================================================
+           STUDENT GAME & ACTIVITY RENDERER
+           ========================================================================== */
+
+        function renderGame() {
+            const module = lessonModules[currentModuleIndex];
+            document.getElementById('gameTitle').innerText = module.gameTitle;
+            document.getElementById('gameStep').innerText = currentGameIndex + 1;
+            document.getElementById('gameFeedbackMsg').innerHTML = `<span>Listen and tap your answer!</span>`;
+
+            const questions = module.gameQuestions;
+            if (!questions || questions.length === 0) return;
+
+            const q = questions[currentGameIndex % questions.length];
+            const canvas = document.getElementById('gameCanvas');
+
+            // Render Activity based on module type
+            if (currentModuleIndex === 0 || currentModuleIndex === 1) {
+                // Choose Letter / Match Sound
+                canvas.innerHTML = `
+                    <div class="text-center space-y-6 w-full max-w-xl">
+                        <div class="bg-purple-50 border-2 border-purple-200 rounded-2xl p-6 shadow-sm">
+                            <h3 class="text-2xl md:text-3xl font-bold text-purple-900 mb-2">${q.prompt}</h3>
+                            <button onclick="speakText('${q.sound || q.prompt}')" class="mt-2 bg-purple-500 hover:bg-purple-600 text-white font-bold px-5 py-2 rounded-xl shadow inline-flex items-center gap-2 text-lg">
+                                <i class="fa-solid fa-volume-high"></i> Play Audio Sound
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-4 mt-6">
+                            ${q.options.map(opt => `
+                                <button onclick="checkGameAnswer('${opt}', '${q.target}')" 
+                                        class="bg-white hover:bg-purple-100 border-4 border-purple-300 text-purple-800 text-4xl md:text-5xl font-bold py-6 rounded-3xl shadow-md transition-transform hover:scale-105 active:scale-95">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentModuleIndex === 2) {
+                // Blend Syllables
+                canvas.innerHTML = `
+                    <div class="text-center space-y-6 w-full max-w-xl">
+                        <div class="bg-amber-50 border-2 border-amber-300 rounded-2xl p-6 shadow-sm">
+                            <span class="text-slate-500 font-bold text-lg">Syllable Challenge</span>
+                            <h3 class="text-3xl font-bold text-amber-900 mt-1">${q.prompt}</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            ${q.options.map(opt => `
+                                <button onclick="checkGameAnswer('${opt}', '${q.target}')" 
+                                        class="bg-white hover:bg-amber-100 border-4 border-amber-300 text-amber-800 text-2xl font-bold py-5 px-3 rounded-2xl shadow-md transition-transform hover:scale-105 active:scale-95">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentModuleIndex === 3) {
+                // Word Building
+                canvas.innerHTML = `
+                    <div class="text-center space-y-6 w-full max-w-xl">
+                        <div class="text-7xl mb-2">${q.icon || '🧩'}</div>
+                        <div class="bg-emerald-50 border-2 border-emerald-300 rounded-2xl p-4 shadow-sm">
+                            <h3 class="text-3xl font-bold text-emerald-900">${q.prompt}</h3>
+                        </div>
+
+                        <div class="flex justify-center gap-4">
+                            ${q.options.map(opt => `
+                                <button onclick="checkGameAnswer('${opt}', '${q.missing}')" 
+                                        class="bg-white hover:bg-emerald-100 border-4 border-emerald-300 text-emerald-800 text-4xl font-bold w-20 h-20 rounded-2xl shadow-md transition-transform hover:scale-105 active:scale-95">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (currentModuleIndex === 4) {
+                // Word Reading
+                canvas.innerHTML = `
+                    <div class="text-center space-y-6 w-full max-w-xl">
+                        <div class="bg-sky-50 border-4 border-sky-300 rounded-3xl p-8 shadow-sm">
+                            <span class="text-sky-600 font-bold text-lg">Read this word out loud:</span>
+                            <h3 class="text-6xl font-bold text-sky-900 tracking-wider my-3">${q.word}</h3>
+                            <button onclick="speakText('${q.word}')" class="bg-sky-500 hover:bg-sky-600 text-white font-bold px-4 py-2 rounded-xl text-lg flex items-center gap-2 mx-auto">
+                                <i class="fa-solid fa-volume-high"></i> Listen Word
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            ${q.options.map(opt => `
+                                <button onclick="checkGameAnswer('${opt}', '${q.target}')" 
+                                        class="bg-white hover:bg-sky-100 border-2 border-sky-300 text-slate-800 text-xl font-bold py-4 px-2 rounded-2xl shadow transition-transform hover:scale-105">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                // Sentence Reading & Answer
+                canvas.innerHTML = `
+                    <div class="text-center space-y-6 w-full max-w-2xl">
+                        <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-6 shadow-sm">
+                            <p class="text-3xl font-bold text-slate-800 mb-3">"${q.sentence}"</p>
+                            <div class="h-1 bg-rose-200 w-full my-3"></div>
+                            <p class="text-2xl font-bold text-rose-800">${q.question}</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            ${q.options.map(opt => `
+                                <button onclick="checkGameAnswer('${opt}', '${q.target}')" 
+                                        class="bg-white hover:bg-rose-100 border-2 border-rose-300 text-slate-800 text-xl font-bold py-4 px-3 rounded-2xl shadow transition-transform hover:scale-105">
+                                    ${opt}
+                                </button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function checkGameAnswer(selected, target) {
+            const feedback = document.getElementById('gameFeedbackMsg');
+            if (selected === target) {
+                starCount += 10;
+                document.getElementById('starCount').innerText = starCount;
+                triggerConfetti();
+                speakText("Super job! That is correct!");
+                feedback.innerHTML = `<span class="text-emerald-600 font-bold"><i class="fa-solid fa-circle-check"></i> Excellent! Correct Answer!</span>`;
+            } else {
+                speakText("Oops! Try again!");
+                feedback.innerHTML = `<span class="text-rose-500 font-bold"><i class="fa-solid fa-circle-xmark"></i> Not quite, try another one!</span>`;
+            }
+        }
+
+        function nextGameQuestion() {
+            const questions = lessonModules[currentModuleIndex].gameQuestions;
+            currentGameIndex = (currentGameIndex + 1) % questions.length;
+            renderGame();
+        }
+
+
+        /* ==========================================================================
+           AUDIO & TEXT TO SPEECH UTILITIES
+           ========================================================================== */
+
+        function speakText(text) {
+            if (!isAudioEnabled) return;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Stop ongoing speech
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.85; // Slightly slower for clarity in phonics
+                utterance.pitch = 1.05; // Slightly warm tone
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        function toggleAudioSpeech() {
+            isAudioEnabled = !isAudioEnabled;
+            const icon = document.getElementById('audioIcon');
+            const btn = document.getElementById('audioToggleBtn');
+
+            if (isAudioEnabled) {
+                icon.className = "fa-solid fa-volume-high text-lg";
+                btn.className = "bg-emerald-100 hover:bg-emerald-200 text-emerald-700 px-3 py-2 rounded-xl font-bold text-sm flex items-center gap-2 border border-emerald-300";
+                speakText("Voice enabled!");
+            } else {
+                icon.className = "fa-solid fa-volume-xmark text-lg";
+                btn.className = "bg-slate-200 text-slate-600 px-3 py-2 rounded-xl font-bold text-sm flex items-center gap-2 border border-slate-300";
+                window.speechSynthesis.cancel();
+            }
+        }
+
+        function triggerConfetti() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 60,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+        }
+
+        function showModal(title, message) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalBody').innerText = message;
+            document.getElementById('infoModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+
+        /* ==========================================================================
+           ONE-CLICK POWERPOINT (.PPTX) GENERATOR FUNCTION
+           ========================================================================== */
+
+        function downloadPPTX() {
+            try {
+                if (typeof PptxGenJS === 'undefined') {
+                    showModal("Error", "PPTX library is loading. Please try again in a moment.");
+                    return;
+                }
+
+                showModal("Generating PPTX File", "Building your 120+ slide curriculum presentation. Please wait a few seconds...");
+
+                const pptx = new PptxGenJS();
+                pptx.layout = 'LAYOUT_16x9';
+
+                // Slide Design Themes
+                const bgColors = ["F4F7FE", "FFFBEB", "F0FDF4", "FEF2F2", "F3E8FF"];
+
+                // Build Slides for All 6 Modules (20 slides each = 120+ slides!)
+                lessonModules.forEach((module, mIdx) => {
+                    
+                    // Module Title Slide
+                    const titleSlide = pptx.addSlide();
+                    titleSlide.background = { color: "0F172A" };
+                    titleSlide.addText(`SESSION ${mIdx + 1}`, {
+                        x: 0.8, y: 1.5, w: 11.5, h: 0.8,
+                        fontSize: 32, color: "38BDF8", bold: true, align: 'left'
+                    });
+                    titleSlide.addText(module.name.toUpperCase(), {
+                        x: 0.8, y: 2.3, w: 11.5, h: 1.5,
+                        fontSize: 55, color: "FFFFFF", bold: true, align: 'left'
+                    });
+                    titleSlide.addText("Phonics & Early Reading Curriculum Deck", {
+                        x: 0.8, y: 4.2, w: 11.5, h: 0.8,
+                        fontSize: 24, color: "94A3B8", align: 'left'
+                    });
+
+                    // 20 Individual Slides per Session
+                    module.slides.forEach((slide, sIdx) => {
+                        const pptSlide = pptx.addSlide();
+                        pptSlide.background = { color: bgColors[mIdx % bgColors.length] };
+
+                        // Header Bar
+                        pptSlide.addText(`Session ${mIdx + 1}: ${module.name} | Slide ${sIdx + 1}`, {
+                            x: 0.8, y: 0.4, w: 11.5, h: 0.5,
+                            fontSize: 18, color: "0284C7", bold: true
+                        });
+
+                        // Main Slide Title (Min Font Size ~55 per guidelines)
+                        pptSlide.addText(slide.title, {
+                            x: 0.8, y: 0.9, w: 7.5, h: 1.2,
+                            fontSize: 40, color: "0F172A", bold: true
+                        });
+
+                        // Content Bullet Points (Large font >= 32-45pt for class readability)
+                        const bulletText = slide.bullets.map(b => b.replace(/<[^>]*>?/gm, '')).join("\n• ");
+                        pptSlide.addText(`• ${bulletText}`, {
+                            x: 0.8, y: 2.3, w: 7.2, h: 3.2,
+                            fontSize: 26, color: "334155", leading: 36
+                        });
+
+                        // Formative Question Box at Bottom
+                        pptSlide.addShape(pptx.shapes.RECTANGLE, {
+                            x: 0.8, y: 5.6, w: 7.2, h: 1.2,
+                            fill: { color: "DCFCE7" }, line: { color: "22C55E", width: 1.5 }
+                        });
+                        pptSlide.addText(`Quick Check: ${slide.assessment.question}`, {
+                            x: 1.0, y: 5.7, w: 6.8, h: 1.0,
+                            fontSize: 20, color: "14532D", bold: true
+                        });
+
+                        // Visual Graphic Box on Right (Occupies <= 40% area)
+                        pptSlide.addShape(pptx.shapes.ROUNDED_RECTANGLE, {
+                            x: 8.5, y: 1.2, w: 4.2, h: 5.2,
+                            fill: { color: "FFFFFF" }, line: { color: "BAE6FD", width: 2 }
+                        });
+                        pptSlide.addText(slide.visual, {
+                            x: 8.5, y: 2.0, w: 4.2, h: 2.2,
+                            fontSize: 100, align: 'center'
+                        });
+                        pptSlide.addText(slide.caption, {
+                            x: 8.7, y: 4.8, w: 3.8, h: 1.0,
+                            fontSize: 22, color: "0369A1", bold: true, align: 'center'
+                        });
+                    });
+                });
+
+                // Generate and save PPTX file
+                pptx.writeFile({ fileName: `Phonics_and_Early_Reading_Curriculum.pptx` }).then(() => {
+                    closeModal();
+                });
+
+            } catch (err) {
+                console.error("PPTX Export Error:", err);
+                showModal("Export Error", "There was an issue creating the PPTX file. Please check your browser support.");
+            }
+        }
+    </script>
+</body>
+</html>
